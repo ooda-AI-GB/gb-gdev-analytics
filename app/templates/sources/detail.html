@@ -1,0 +1,60 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <div>
+        <a href="/sources" class="btn btn-outline" style="margin-bottom: 0.5rem;">Back</a>
+        <h1 style="margin: 0;">{{ source.name }}</h1>
+        <p style="color: var(--text-secondary); margin: 0.5rem 0 0 0;">{{ source.description or 'No description' }}</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <span class="badge badge-info" style="align-self: flex-start; margin-top: 0.5rem;">{{ source.source_type }}</span>
+        <form action="/sources/{{ source.id }}/delete" method="post" onsubmit="return confirm('Delete source and all its records? This cannot be undone.');">
+            <button type="submit" class="btn btn-danger">Delete Source</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+        <div>
+            <strong>{{ source.row_count }}</strong> Records
+            <span style="color: var(--text-secondary); margin: 0 0.5rem;">•</span>
+            Last synced: {{ source.last_synced_at.strftime('%Y-%m-%d %H:%M') if source.last_synced_at else 'Never' }}
+        </div>
+        <!-- Add Record Button if needed -->
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="font-size: 0.875rem;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    {% for field in fields %}
+                    <th>{{ field }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td style="white-space: nowrap;">{{ record.record_date }}</td>
+                    {% for field in fields %}
+                    <td>{{ record.get(field, '-') }}</td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ fields|length + 1 }}" style="text-align: center; padding: 2rem;">
+                        No records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: right;">
+        Showing latest 20 records
+    </p>
+</div>
+{% endblock %}

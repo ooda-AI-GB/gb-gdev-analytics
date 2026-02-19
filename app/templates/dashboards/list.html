@@ -1,0 +1,41 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <h1>Dashboards</h1>
+    <a href="/dashboards/new" class="btn btn-primary">+ New Dashboard</a>
+</div>
+
+<div class="grid">
+    {% for dashboard in dashboards %}
+    <div class="card col-span-4">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+            <h3 style="margin-top:0;">
+                <a href="/dashboards/{{ dashboard.id }}" style="text-decoration:none; color:inherit;">
+                    {{ dashboard.name }}
+                </a>
+            </h3>
+            {% if dashboard.is_default %}
+            <span class="badge badge-info">Default</span>
+            {% endif %}
+        </div>
+        <p style="color:var(--text-secondary); font-size:0.875rem;">
+            {{ dashboard.description or 'No description' }}
+        </p>
+        <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; color:var(--text-secondary);">
+                {{ dashboard.widget_count }} Widgets
+            </span>
+            <div style="display:flex; gap:0.5rem;">
+                <a href="/dashboards/{{ dashboard.id }}" class="btn btn-outline" style="padding:0.25rem 0.5rem; font-size:0.75rem;">View</a>
+                {% if not dashboard.is_default %}
+                <form action="/dashboards/{{ dashboard.id }}/default" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-outline" style="padding:0.25rem 0.5rem; font-size:0.75rem;">Set Default</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

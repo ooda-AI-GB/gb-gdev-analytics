@@ -1,0 +1,90 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <h1>{{ dashboard.name if dashboard else 'Welcome' }}</h1>
+    {% if not dashboard %}
+    <a href="/dashboards/new" class="btn btn-primary">Create Your First Dashboard</a>
+    {% else %}
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="/dashboards/{{ dashboard.id }}/edit" class="btn btn-outline">Edit</a>
+        <a href="/dashboards/{{ dashboard.id }}/widgets/new" class="btn btn-primary">+ Widget</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if dashboard %}
+<div class="grid" style="grid-auto-rows: minmax(150px, auto);">
+    {% for widget in widgets %}
+    <div class="card" style="grid-column: span {{ widget.width }}; grid-row: span {{ widget.height }};">
+        <h3 style="margin-top:0; font-size:1rem; color:var(--text-secondary);">{{ widget.title }}</h3>
+        <div id="container-{{ widget.id }}" style="height: calc(100% - 2rem); position: relative; display: flex; flex-direction: column; justify-content: center;">
+            <canvas id="widget-{{ widget.id }}"></canvas>
+        </div>
+    </div>
+    <script>
+        (async () => {
+            try {
+                const res = await fetch('/api/widgets/{{ widget.id }}/data');
+                const data = await res.json();
+                const container = document.getElementById('container-{{ widget.id }}');
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color:red">${data.error}</div>`;
+                    return;
+                }
+
+                if (data.type === 'metric_card' || data.type === 'trend_indicator') {
+                    // Render Metric
+                    const lastVal = data.datasets[0]?.data.slice(-1)[0] ?? 0;
+                    // Format
+                    let valStr = lastVal;
+                    if (data.config.format === 'currency') valStr = '$' + Number(lastVal).toLocaleString();
+                    if (data.config.format === 'percent') valStr = Number(lastVal).toFixed(1) + '%';
+                    
+                    let trendHtml = '';
+                    if (data.config.trend) {
+                        const color = data.config.trend === 'up' ? 'var(--success)' : 'var(--danger)';
+                        const icon = data.config.trend === 'up' ? '▲' : '▼';
+                        trendHtml = `<div style="color:${color}; font-size: 0.875rem; margin-top: 0.25rem;">${icon} Trend</div>`;
+                    }
+                    
+                    container.innerHTML = `
+                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--text-primary);">${valStr}</div>
+                        ${trendHtml}
+                    `;
+                } else {
+                    // Render Chart
+                    const ctx = document.getElementById('widget-{{ widget.id }}').getContext('2d');
+                    let chartType = 'line';
+                    if (data.type === 'bar_chart') chartType = 'bar';
+                    if (data.type === 'doughnut_chart') chartType = 'doughnut';
+                    
+                    new Chart(ctx, {
+                        type: chartType,
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: data.datasets.length > 1 }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+    </script>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p>Welcome to Analytics Pro. Create a dashboard to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

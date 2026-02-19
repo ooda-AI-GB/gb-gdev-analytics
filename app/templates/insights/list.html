@@ -1,0 +1,65 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <h1>AI Insights</h1>
+    <button onclick="generateInsights()" id="gen-btn" class="btn btn-primary">
+        Generate Analysis
+    </button>
+</div>
+
+<div id="loading" style="display:none; text-align:center; padding:2rem; background:white; margin-bottom:1rem; border-radius:0.5rem;">
+    Generating insights across all data sources... This may take a moment.
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr;">
+    {% for insight in insights %}
+    <div class="card" style="border-left: 4px solid var(--{{ 'success' if insight.severity == 'info' else ('warning' if insight.severity == 'warning' else 'danger') }}); position: relative;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+            <span style="font-size:0.75rem; font-weight:600; text-transform:uppercase; color:var(--text-secondary); letter-spacing:0.05em;">
+                {{ insight.insight_type }}
+            </span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">
+                {{ insight.created_at.strftime('%b %d, %H:%M') }}
+            </span>
+        </div>
+        <h3 style="margin:0 0 0.5rem 0; font-size:1.125rem;">{{ insight.title }}</h3>
+        <p style="color:var(--text-secondary); margin:0; line-height:1.5;">{{ insight.description }}</p>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:3rem; color:var(--text-secondary);">
+        No insights generated yet. Click "Generate Analysis" to start.
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+async function generateInsights() {
+    const btn = document.getElementById('gen-btn');
+    const loading = document.getElementById('loading');
+    
+    if (!confirm('Run AI analysis on all active data sources?')) return;
+    
+    btn.disabled = true;
+    btn.textContent = 'Analyzing...';
+    loading.style.display = 'block';
+    
+    try {
+        const res = await fetch('/api/insights/generate', { method: 'POST' });
+        const data = await res.json();
+        
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to generate insights'));
+            btn.disabled = false;
+            loading.style.display = 'none';
+        }
+    } catch (e) {
+        alert('Network error');
+        btn.disabled = false;
+        loading.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

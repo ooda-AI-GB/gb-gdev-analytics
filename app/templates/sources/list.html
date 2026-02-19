@@ -1,0 +1,53 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <h1>Data Sources</h1>
+    <a href="/sources/new" class="btn btn-primary">+ Connect Data Source</a>
+</div>
+
+<div class="card" style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Records</th>
+                <th>Last Synced</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in sources %}
+            <tr>
+                <td>
+                    <a href="/sources/{{ source.id }}" style="font-weight: 500; color: var(--primary); text-decoration: none;">
+                        {{ source.name }}
+                    </a>
+                </td>
+                <td>
+                    <span class="badge badge-info">{{ source.source_type }}</span>
+                </td>
+                <td>{{ source.row_count }}</td>
+                <td>{{ source.last_synced_at.strftime('%Y-%m-%d %H:%M') if source.last_synced_at else '-' }}</td>
+                <td>
+                    <span class="badge {{ 'badge-success' if source.status == 'active' else 'badge-warning' }}">
+                        {{ source.status }}
+                    </span>
+                </td>
+                <td>
+                    <a href="/sources/{{ source.id }}" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">View</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                    No data sources found. Connect your first data source to get started.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

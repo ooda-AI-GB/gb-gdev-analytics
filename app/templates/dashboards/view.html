@@ -1,0 +1,100 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="header">
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <a href="/dashboards" class="btn btn-outline">Back</a>
+        <h1>{{ dashboard.name }}</h1>
+        {% if dashboard.is_default %}
+        <span class="badge badge-info">Default</span>
+        {% endif %}
+    </div>
+    <div style="display:flex; gap: 0.5rem;">
+        {% if not dashboard.is_default %}
+        <form action="/dashboards/{{ dashboard.id }}/default" method="post">
+            <button type="submit" class="btn btn-outline">Set Default</button>
+        </form>
+        {% endif %}
+        <a href="/dashboards/{{ dashboard.id }}/edit" class="btn btn-outline">Edit Layout</a>
+        <a href="/dashboards/{{ dashboard.id }}/widgets/new" class="btn btn-primary">+ Add Widget</a>
+        <form action="/dashboards/{{ dashboard.id }}/delete" method="post" onsubmit="return confirm('Delete this dashboard?');">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+</div>
+
+<p style="margin-bottom:2rem; color:var(--text-secondary);">{{ dashboard.description }}</p>
+
+<div class="grid" style="grid-auto-rows: minmax(200px, auto);">
+    {% for widget in widgets %}
+    <div class="card" style="grid-column: span {{ widget.width }}; grid-row: span {{ widget.height }}; position: relative; display: flex; flex-direction: column;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+            <h3 style="margin:0; font-size:1rem; color:var(--text-secondary);">{{ widget.title }}</h3>
+            <form action="/widgets/{{ widget.id }}/delete" method="post" style="display:inline;" onsubmit="return confirm('Delete widget?');">
+                <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--text-secondary); font-size:1.2rem;">&times;</button>
+            </form>
+        </div>
+        <div class="chart-container" id="container-{{ widget.id }}" style="flex-grow: 1; position: relative; min-height: 0;">
+            <canvas id="widget-{{ widget.id }}"></canvas>
+        </div>
+    </div>
+    <script>
+        (async () => {
+            try {
+                const res = await fetch('/api/widgets/{{ widget.id }}/data');
+                const data = await res.json();
+                const container = document.getElementById('container-{{ widget.id }}');
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color:red; display:flex; align-items:center; justify-content:center; height:100%;">${data.error}</div>`;
+                    return;
+                }
+
+                if (data.type === 'metric_card' || data.type === 'trend_indicator') {
+                    const lastVal = data.datasets[0]?.data.slice(-1)[0] ?? 0;
+                    let valStr = lastVal;
+                    if (data.config.format === 'currency') valStr = '$' + Number(lastVal).toLocaleString();
+                    if (data.config.format === 'percent') valStr = Number(lastVal).toFixed(1) + '%';
+                    
+                    let trendHtml = '';
+                    if (data.config.trend) {
+                        const color = data.config.trend === 'up' ? 'var(--success)' : 'var(--danger)';
+                        const icon = data.config.trend === 'up' ? '▲' : '▼';
+                        trendHtml = `<div style="color:${color}; font-size: 0.875rem; margin-top: 0.25rem;">${icon} Trend</div>`;
+                    }
+                    
+                    container.innerHTML = `
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                            <div style="font-size: 2.5rem; font-weight: bold; color: var(--text-primary);">${valStr}</div>
+                            ${trendHtml}
+                        </div>
+                    `;
+                } else {
+                    const ctx = document.getElementById('widget-{{ widget.id }}').getContext('2d');
+                    let chartType = 'line';
+                    if (data.type === 'bar_chart') chartType = 'bar';
+                    if (data.type === 'doughnut_chart') chartType = 'doughnut';
+                    
+                    new Chart(ctx, {
+                        type: chartType,
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: data.datasets.length > 1 }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+    </script>
+    {% endfor %}
+</div>
+{% endblock %}

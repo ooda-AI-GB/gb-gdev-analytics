@@ -1,0 +1,128 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <h1 style="margin-bottom: 2rem;">AI Data Analyst</h1>
+    
+    <div class="card">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="font-size: 1rem; margin-bottom: 0.5rem; display: block;">Ask a question about your data</label>
+            <div style="display: flex; gap: 0.75rem;">
+                <input type="text" id="query-input" placeholder="e.g. What was total revenue last month?" style="padding: 1rem; font-size: 1.125rem;">
+                <button onclick="runQuery()" class="btn btn-primary" style="padding: 0 1.5rem; font-size: 1.125rem;">Ask AI</button>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                Tip: Be specific about date ranges and field names.
+            </p>
+        </div>
+
+        <div id="loading" style="display: none; padding: 2rem; text-align: center; color: var(--text-secondary);">
+            <div style="margin-bottom: 0.5rem; font-size: 1.5rem;">✨</div>
+            Generating SQL and analyzing data...
+        </div>
+
+        <div id="error-msg" style="display: none; padding: 1rem; background: #fee2e2; color: #991b1b; border-radius: 0.5rem; margin-top: 1rem;"></div>
+
+        <div id="result-container" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); font-weight: 600;">Generated SQL</span>
+                <pre id="sql-code" style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-top: 0.5rem; font-size: 0.875rem;"></pre>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); font-weight: 600;">Result</span>
+                <div style="overflow-x: auto; margin-top: 0.5rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+                    <table id="result-table" style="width: 100%; font-size: 0.875rem;">
+                        <thead><tr id="table-head"></tr></thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function runQuery() {
+    const input = document.getElementById('query-input');
+    const btn = document.querySelector('button');
+    const loading = document.getElementById('loading');
+    const resultContainer = document.getElementById('result-container');
+    const errorMsg = document.getElementById('error-msg');
+    
+    if (!input.value.trim()) return;
+    
+    // Reset UI
+    loading.style.display = 'block';
+    resultContainer.style.display = 'none';
+    errorMsg.style.display = 'none';
+    btn.disabled = true;
+    
+    try {
+        const res = await fetch('/api/query', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ question: input.value })
+        });
+        
+        const data = await res.json();
+        
+        loading.style.display = 'none';
+        btn.disabled = false;
+        
+        if (res.status !== 200 || data.error) {
+            errorMsg.textContent = data.error || 'An error occurred';
+            errorMsg.style.display = 'block';
+            return;
+        }
+        
+        // Show SQL
+        document.getElementById('sql-code').textContent = data.sql;
+        
+        // Build Table
+        const thead = document.getElementById('table-head');
+        const tbody = document.getElementById('table-body');
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+        
+        if (data.results && data.results.length > 0) {
+            // Headers
+            const keys = Object.keys(data.results[0]);
+            keys.forEach(k => {
+                const th = document.createElement('th');
+                th.textContent = k;
+                thead.appendChild(th);
+            });
+            
+            // Rows
+            data.results.forEach(row => {
+                const tr = document.createElement('tr');
+                keys.forEach(k => {
+                    const td = document.createElement('td');
+                    td.textContent = row[k];
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        } else {
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="100%" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No results found for this query.</td>';
+            tbody.appendChild(tr);
+        }
+        
+        resultContainer.style.display = 'block';
+        
+    } catch (e) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        errorMsg.textContent = 'Network error: ' + e.message;
+        errorMsg.style.display = 'block';
+    }
+}
+
+// Allow Enter key
+document.getElementById('query-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') runQuery();
+});
+</script>
+{% endblock %}

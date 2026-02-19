@@ -1,34 +1,40 @@
 {% extends "layout/base.html" %}
 
 {% block content %}
-<div class="top-bar">
-    <h1>Pricing</h1>
+<div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Simple, Transparent Pricing</h1>
+    <p style="color: var(--text-secondary); font-size: 1.125rem;">Start small and scale as your data needs grow.</p>
 </div>
 
-<div class="pricing-grid">
-    <div class="plan-card">
-        <div class="plan-title">Free</div>
-        <div class="plan-price">$0 / month</div>
-        <ul class="features-list">
-            <li>Unlimited notes</li>
-            <li>Create, edit, delete</li>
-            <li>3 sample notes</li>
-            <li>Secure storage</li>
+<div class="grid">
+    <div class="card col-span-6" style="display: flex; flex-direction: column;">
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Starter</h2>
+        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1.5rem;">$0 <span style="font-size: 1rem; font-weight: normal; color: var(--text-secondary);">/ month</span></div>
+        <ul style="list-style: none; padding: 0; margin: 0 0 2rem 0; flex-grow: 1;">
+            <li style="margin-bottom: 0.75rem;">✓ 1 Dashboard</li>
+            <li style="margin-bottom: 0.75rem;">✓ 2 Data Sources</li>
+            <li style="margin-bottom: 0.75rem;">✓ 1,000 Rows Limit</li>
+            <li style="margin-bottom: 0.75rem;">✓ Basic Charts</li>
+            <li style="margin-bottom: 0.75rem;">✓ CSV Upload</li>
         </ul>
-        <a href="/auth/login" class="btn btn-outline" style="width: 100%; display: block; text-align: center;">Get Started</a>
+        <a href="/auth/login" class="btn btn-outline" style="text-align: center; justify-content: center;">Get Started</a>
     </div>
 
-    <div class="plan-card premium">
-        <div class="plan-title">Premium</div>
-        <div class="plan-price">$9 / month</div>
-        <ul class="features-list">
-            <li>Everything in Free</li>
-            <li>AI Summarization</li>
-            <li>AI Chat (Coming Soon)</li>
-            <li>Priority Support</li>
+    <div class="card col-span-6" style="display: flex; flex-direction: column; border: 2px solid var(--primary); position: relative;">
+        <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 2px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: bold;">MOST POPULAR</div>
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Growth</h2>
+        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1.5rem;">$59 <span style="font-size: 1rem; font-weight: normal; color: var(--text-secondary);">/ month</span></div>
+        <ul style="list-style: none; padding: 0; margin: 0 0 2rem 0; flex-grow: 1;">
+            <li style="margin-bottom: 0.75rem;">✓ <strong>Everything in Starter</strong></li>
+            <li style="margin-bottom: 0.75rem;">✓ Unlimited Dashboards & Sources</li>
+            <li style="margin-bottom: 0.75rem;">✓ <strong>AI Query (Natural Language)</strong></li>
+            <li style="margin-bottom: 0.75rem;">✓ AI Insights & Recommendations</li>
+            <li style="margin-bottom: 0.75rem;">✓ Scheduled Reports</li>
+            <li style="margin-bottom: 0.75rem;">✓ 100,000 Rows Limit</li>
+            <li style="margin-bottom: 0.75rem;">✓ Priority Support</li>
         </ul>
-        <form action="/subscribe" method="post">
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Subscribe</button>
+        <form action="/subscribe" method="post" style="width: 100%;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Subscribe</button>
         </form>
     </div>
 </div>

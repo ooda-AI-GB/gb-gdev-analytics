@@ -3,36 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Notes</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Analytics Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #6366f1;
+            --bg-dark: #064e3b;
+            --bg-light: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #d1fae5;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: var(--bg-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            flex-shrink: 0;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .user-section {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+        .user-email {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .logout-link {
+            color: var(--warning);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        main {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #059669;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-outline {
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-primary);
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(12, 1fr);
+        }
+        .col-span-12 { grid-column: span 12; }
+        .col-span-8 { grid-column: span 8; }
+        .col-span-6 { grid-column: span 6; }
+        .col-span-4 { grid-column: span 4; }
+        .col-span-3 { grid-column: span 3; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .badge {
+            display: inline-flex;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-active, .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #e0e7ff; color: #3730a3; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            margin-top: 0.25rem;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        /* Chart Styles */
+        .chart-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    {% block head %}{% endblock %}
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">AI Notes</div>
+        <a href="/" class="logo">Analytics Pro</a>
         <div class="nav-links">
-            <a href="/notes" class="nav-link {% if request.url.path.startswith('/notes') %}active{% endif %}">
-                📝 Notes
+            <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+                Dashboard
             </a>
-            <a href="/ai/summary" class="nav-link {% if request.url.path.startswith('/ai') %}active{% endif %}">
-                ✨ AI Summary
+            <a href="/dashboards" class="nav-link {% if request.url.path.startswith('/dashboards') %}active{% endif %}">
+                Dashboards
+            </a>
+            <a href="/sources" class="nav-link {% if request.url.path.startswith('/sources') %}active{% endif %}">
+                Data Sources
+            </a>
+            <a href="/query" class="nav-link {% if request.url.path.startswith('/query') %}active{% endif %}">
+                AI Query
+            </a>
+            <a href="/insights" class="nav-link {% if request.url.path.startswith('/insights') %}active{% endif %}">
+                Insights
             </a>
             <a href="/pricing" class="nav-link {% if request.url.path.startswith('/pricing') %}active{% endif %}">
-                💎 Pricing
+                Billing
             </a>
         </div>
-        {% if user %}
         <div class="user-section">
+            {% if user %}
             <div class="user-email">{{ user.email }}</div>
             <a href="/auth/logout" class="logout-link">Log out</a>
-        </div>
-        {% else %}
-        <div class="user-section">
+            {% else %}
             <a href="/auth/login" class="nav-link">Log in</a>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
 </body>
 </html>
