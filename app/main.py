@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from app.database import engine, Base, get_db
 import app.routes as routes_module
-from app.routes import dashboard, dashboards, sources, widgets, query, insights, billing
+from app.routes import dashboard, dashboards, sources, widgets, query, insights, billing, api
 # Start imports for viv-auth and viv-pay
 from viv_auth import init_auth
 from viv_pay import init_pay
@@ -53,6 +53,7 @@ app.include_router(widgets.router)
 app.include_router(query.router)
 app.include_router(insights.router)
 app.include_router(billing.router)
+app.include_router(api.router, prefix="/api/v1", tags=["api"])
 
 # Startup event
 @app.on_event("startup")
